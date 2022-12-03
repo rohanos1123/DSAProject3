@@ -1,33 +1,61 @@
 #include "ofApp.h"
+#include <fstream>
 #define originX -ofGetWidth()/2.0f
 #define originY -ofGetHeight()/2.0f
+
 //--------------------------------------------------------------
-USMesh US; //
-ofSpherePrimitive sphere;
-Line debug = Line();
+USMesh US;
 void ofApp::setup(){
 	//This function gets called once
-    float lat = 25.7617;
-    float lon = 80.1918; // Miami
     US.setup();
-    US.addCity(lat, lon);
+    std::ifstream cityFile;
+    cityFile.open("../bin/data/Cities.csv");
+    std::string buffer;
+    std::getline(cityFile, buffer); //Ignore header data
+    
+    while (cityFile.is_open()) { //Adds 1000 Cities to the map
+        std::string line;
+        std::getline(cityFile, line);
+        if (line.size() > 0) {
+            std::stringstream stream(line);
+            std::string name;
+            std::getline(stream, name, ',');
+            std::string lat;
+            std::getline(stream, lat, ',');
+            std::string lon;
+            std::getline(stream, lon, ',');
+            std::string population;
+            std::getline(stream, population, ',');
+            US.addCity(name, std::stof(lat), std::stof(lon),std::stof(population));
+        }
+        else {
+            cityFile.close();
+        }
+    }
+    ofEnableDepthTest();
 
 
 }
 //--------------------------------------------------------------
 void ofApp::update(){
-
+    
 }
 
 //-------------------------------------------------------------- This function will be called multiple times per second, and is where the hashMap integration will be
 void ofApp::draw(){
     
     camera.begin();
-    ofSetColor(255, 0, 0);
-    ofFill();
-   
+    
+  
     US.draw();
-    sphere.draw();
+    
+    ofPushMatrix();
+        ofRotateY(90);
+        ofScale(1.2,1, 0.85);
+        ofTranslate(3, 0, 197);
+        US.drawCities();
+    ofPopMatrix();
+
     camera.end();
 }
 
@@ -129,22 +157,37 @@ void USMesh::setup(void) {
     USmesh.load("USMeshFLAT.ply");
     USmesh.setMode(OF_PRIMITIVE_TRIANGLES);
     USmesh.enableColors();
-    //USmesh.setupIndicesAuto();
+    
  
 
 }
 void USMesh::draw(void) {
     ofPushMatrix();
         ofSetColor(00, 00, 0x80); //Navy Blue
+        ofScale(10, 0, 10);
         ofFill();
-        ofScale(20, 0, 20);
         USmesh.draw();
     ofPopMatrix();
 
 }
-void USMesh::addCity(float lat, float lon){
-    sphere.setRadius(2.0f);
-    sphere.setPosition((lat -39.50)/20.0f, 10, (lon-98.35)/20.0f);
-
+void USMesh::addCity(std::string name, float lat, float lon,float parameter){
+    Vertex tempVertex;
+    tempVertex.x = lat;
+    tempVertex.y = parameter;
+    tempVertex.z = lon;
+    orderedMap[name]=tempVertex;
+    if (parameter > maxParameter) {
+        maxParameter = parameter;
+    }
+}
+void USMesh::drawCities(){
     //Middle of the US is 39.50 N 98.35 W, but for our mesh this is 0,0, so we have to subtract that.
+    Line line;
+    ofSetColor(255, 0, 0);
+    ofFill();
+    for (auto iter = orderedMap.begin(); iter != orderedMap.end(); iter++) {
+        float linex = iter->second.x - 39.50;
+        float linez = iter->second.z - 98.35;
+        line.drawLine(linex,0,linez,linex, (iter->second.y/maxParameter) * 10, linez);
+    }
 }
