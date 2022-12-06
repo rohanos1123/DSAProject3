@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <map>
 #include <iostream>
+#include "ofxGui.h"
 class ofApp : public ofBaseApp {
 
 public:
@@ -12,7 +13,7 @@ public:
 	void setup();
 	void update();
 	void draw();
-
+	
 	void keyPressed(int key);
 	void keyReleased(int key);
 	void mouseMoved(int x, int y);
@@ -24,8 +25,11 @@ public:
 	void windowResized(int w, int h);
 	void dragEvent(ofDragInfo dragInfo);
 	void gotMessage(ofMessage msg);
-	//Debug Tools
-	void drawGrid();
+	ofxGuiGroup gui;
+	ofxButton results;
+	ofxButton parameter;
+	ofxButton dataStruct;
+
 
 
 
@@ -35,6 +39,7 @@ public:
 	void drawLine(float x, float y, float z, float x2, float y2, float z2);
 };
 struct Vertex {
+	std::string name;
 	float x;
 	float y;
 	float z;
@@ -42,14 +47,18 @@ struct Vertex {
 
 class USMesh {
 private:
-	std::map<std::string,Vertex> orderedMap;
+	
 	float maxParameter;
 public:
+	std::map<std::string, Vertex> orderedMap;
+	std::unordered_map<std::string, Vertex> unorderedMap;
+	bool usingOrderedmap = true;
 	ofVboMesh USmesh; // A collection of vertices, each vertex = a city in the us, plus some other vertices to define the shape better
-	
 	void setup(void);
 	void draw(void);
 	void addCity(std::string name, float lat, float lon, float parameter);
-	void USMesh::drawCities();
-
+	void clearCities();
+	void drawCities();
+	void printResults();
+	void citySetup(int parameter);
 };
