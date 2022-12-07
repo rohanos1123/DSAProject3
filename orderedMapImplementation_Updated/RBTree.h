@@ -8,9 +8,10 @@
 #include "TreeNode.h"
 #include <queue>
 
-template <typename T, typename l, typename r>
+template <typename T>
 class RBTree {
 private:
+    TreeNode<T> *root;
     TreeNode<T>* leftRotate(TreeNode<T> *node);
     TreeNode<T>* rightRotate(TreeNode<T> *node);
     int size;
@@ -19,27 +20,25 @@ private:
     void postOrderHelper(TreeNode<T> *node);
 
 
-    // Flags for tree rotations (all set to false intiaially) (switched on insert)
-    bool leftleft = false;
-    bool rightright = false;
-    bool leftright = false;
-    bool rightleft = false;
+
+    bool ll = false;
+    bool rr = false;
+    bool lr = false;
+    bool rl = false;
 
 
 public:
-    TreeNode<T> *root;
     RBTree();
     void insert(T &n_node);
-    r* Search(TreeNode<T>* omar, l i_key);
-
+    float operator[](std::string);
     void inOrderTraversal(std::vector<T> &insertionVector);
     ~RBTree();
 
 
 };
 
-template <typename T, typename l, typename r>
-RBTree<T, l, r>::RBTree(){
+template <typename T>
+RBTree<T>::RBTree(){
     this->root = nullptr;
     this->size = 0;
 
@@ -47,8 +46,8 @@ RBTree<T, l, r>::RBTree(){
 }
 
 //AVL tree rotation
-template <typename T, typename l, typename r>
-TreeNode<T>* RBTree<T, l, r>::leftRotate(TreeNode<T> *node){
+template <typename T>
+TreeNode<T>* RBTree<T>::leftRotate(TreeNode<T> *node){
     //Take the unbalanced node (*node) and rotate to make the right child the new root of the subtree
 
     //Take the right child of the node
@@ -76,12 +75,14 @@ TreeNode<T>* RBTree<T, l, r>::leftRotate(TreeNode<T> *node){
 }
 
 //AVL tree rotation
-template <typename T, typename l, typename r>
-TreeNode<T>* RBTree<T, l, r>::rightRotate(TreeNode<T> *node){
+template <typename T>
+TreeNode<T>* RBTree<T>::rightRotate(TreeNode<T> *node){
     // Take the left child of node
     TreeNode<T> *lc = node->left;
     //take the remaining right child of the left node
     TreeNode<T> *lrc = lc->right;
+    //TreeNode
+    TreeNode<T> *np = node->parent;
 
 
     //Make the left child right node the node as node > lc
@@ -101,8 +102,8 @@ TreeNode<T>* RBTree<T, l, r>::rightRotate(TreeNode<T> *node){
     return lc;
 }
 
-template <typename T, typename l, typename r>
-TreeNode<T>* RBTree<T, l, r>::insertHelper(TreeNode<T> *subRoot, TreeNode<T> *n_node){
+template <typename T>
+TreeNode<T>* RBTree<T>::insertHelper(TreeNode<T> *subRoot, TreeNode<T> *n_node){
     //If a red parent has a red child
     bool errorFlag = false;
 
@@ -129,7 +130,6 @@ TreeNode<T>* RBTree<T, l, r>::insertHelper(TreeNode<T> *subRoot, TreeNode<T> *n_
         //Assign parent of n_node after recursive calls are done
         subRoot->right->parent = subRoot;
         if(subRoot != this->root){
-
             if(subRoot->colorState) {
                 if (subRoot->right->colorState) {
                     errorFlag = true;
@@ -141,45 +141,45 @@ TreeNode<T>* RBTree<T, l, r>::insertHelper(TreeNode<T> *subRoot, TreeNode<T> *n_
         subRoot->addNeighbor(n_node);
         return n_node;
     }
-
-    //Left left rotation and color reset
-    if(this->leftleft == true){
-        //left rotate once
+    //perform a left rotation if the
+    if(this->ll == true){
+        //performs a left rotation on the subroot:
         subRoot = this->leftRotate(subRoot);
-        //set new parent to black
         subRoot->colorState = false;
-        //set new child to red
         subRoot->left->colorState = true;
-        this->leftleft = false;
+        this->ll = false;
     }
-    //Right right rotate and color reset
-    else if(this->rightright == true){
-        //left rotate once
+    else if(this->rr == true){
+        //Right rotate the root
         subRoot = this->rightRotate(subRoot);
-        //set new parent to black
-        subRoot->colorState = false;
-        //set new child to red
         subRoot->right->colorState = true;
-
-        this->rightright = false;
+        subRoot->colorState = false;
+        this->rr = false;
     }
-    //Right left rotate and color reset
     else if(this->rightleft == true){
+        //Perform first rotation
         subRoot->right = rightRotate(subRoot->right);
+        //Reassign parents
         subRoot->right->parent = subRoot;
+        //Perform second ration on new left root
         subRoot = leftRotate(subRoot);
+
+        //switch color of father and son
         subRoot->colorState = false;
         subRoot->left->colorState = true;
         this->rightleft = false;
     }
-    //left right rotate and color reset
-    else if(this->leftright == true){
+    else if(this->lr == true){
+        //Left rotation on subroot, left child and reassign
         subRoot->left = leftRotate(subRoot->left);
         subRoot->left->parent = subRoot;
+        //Re assign parent of subroot left to form rr case
+        //Right rotate
         subRoot = rightRotate(subRoot);
+        //Swotch colors
         subRoot->colorState = false;
         subRoot->right->colorState = true;
-        this->leftright = false;
+        this->lr = false;
     }
 
 
@@ -202,7 +202,7 @@ TreeNode<T>* RBTree<T, l, r>::insertHelper(TreeNode<T> *subRoot, TreeNode<T> *n_
                 else if(subRoot->right != nullptr){
                     //If the node that was inserted is a child and is red, do right rotation to parent as root (black)
                     if(subRoot->right->colorState){
-                        this->leftleft = true;
+                        this->ll = true;
                     }
                 }
             }
@@ -216,38 +216,38 @@ TreeNode<T>* RBTree<T, l, r>::insertHelper(TreeNode<T> *subRoot, TreeNode<T> *n_
             }
         }
         else{
-            //If the parent is a right child of the grandfather, if both are black
+            //If the parent is a right child of the grandfather, and both are black
             if (grandfather->right == nullptr || grandfather->right->colorState == false){
 
-                //Perform the color switch
                 if(subRoot->left != nullptr){
                     if(subRoot->left->colorState){
-                        this->rightright = true;
+                        this->rr = true;
                     }
                 }
-                //Left right if the subroot is right
                 else if(subRoot->right != nullptr){
                     if(subRoot->right->colorState){
-                        this->leftright = true;
+                        this->lr = true;
                     }
                 }
             }
             else{
-                subRoot->parent->right->colorState = false;
                 subRoot->colorState = false;
+                subRoot->parent->right->colorState = false;
                 if(subRoot->parent != this->root){
                     subRoot->parent->colorState = true;
                 }
             }
         }
+
+
         errorFlag = false;
     }
     return subRoot;
 }
 
-
-template <typename T, typename l, typename r>
-void RBTree<T, l, r>::insert(T &nObj){
+//Bst insertion with insert helper.
+template <typename T>
+void RBTree<T>::insert(T &nObj){
     //Perform a normal BST insertion (with recency Queue)
     auto *n_node = new TreeNode<T>(&nObj);
     if(this->size == 0){
@@ -260,9 +260,9 @@ void RBTree<T, l, r>::insert(T &nObj){
     }
 }
 
-//In order traversal helper method due to rescursion
-template <typename T, typename l, typename r>
-void RBTree<T, l, r>::iotHelper(TreeNode<T> *node, std::vector<T> &outputData){
+//Inorder traversal helper
+template <typename T>
+void RBTree<T>::iotHelper(TreeNode<T> *node, std::vector<T> &outputData){
     if(node == nullptr){
         return;
     }
@@ -271,15 +271,15 @@ void RBTree<T, l, r>::iotHelper(TreeNode<T> *node, std::vector<T> &outputData){
     iotHelper(node->right, outputData);
 }
 
-//In orderTraversal copies values into a list and prints it out
-template <typename T, typename l, typename r>
-void RBTree<T, l, r>::inOrderTraversal(std::vector<T> &insertionVector){
+//In order traversal for sorting
+template <typename T>
+void RBTree<T>::inOrderTraversal(std::vector<T> &insertionVector){
     iotHelper(this->root, insertionVector);
 }
 
-//post order traversal node deletion
-template <typename T, typename l, typename r>
-void RBTree<T, l, r>::postOrderHelper(TreeNode<T> *node) {
+//Post order helper used for deletion
+template <typename T>
+void RBTree<T>::postOrderHelper(TreeNode<T> *node) {
     if(node == nullptr){
         return;
     }
@@ -288,35 +288,10 @@ void RBTree<T, l, r>::postOrderHelper(TreeNode<T> *node) {
     delete node;
 }
 
-//Destructor that deletes nodes with postOrder
-template <typename T, typename l, typename r>
-RBTree<T, l ,r>::~RBTree(){
+template <typename T>
+RBTree<T>::~RBTree(){
     postOrderHelper(this->root);
 }
-
-//Search method
-template <typename T, typename l, typename r>
-r* RBTree<T, l, r>::Search(TreeNode<T> *subRoot, l i_key){
-    if(subRoot == nullptr){
-        std::cout<<"Could not find data!"<<std::endl;
-        return nullptr;
-    }
-
-    if(subRoot->getData().getKey() == i_key){
-        return &subRoot->getData().getValue();
-    }
-
-    if(subRoot->getData().getKey() > i_key){
-       return  Search(subRoot->left, i_key);
-    }
-    else {
-        return Search(subRoot->right, i_key);
-    }
-
-}
-
-
-
 
 
 
