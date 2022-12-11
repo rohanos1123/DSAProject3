@@ -1,0 +1,29 @@
+RBTree
+
+T is a template class
+RBTree<T> r; 
+
+//Inserts an object of template class T into the list 
+r.insert(T); 
+
+//Stores ordered list of elements in RB tree into the provided vector 
+r.inOrderTraversal(&Vector<T>)
+
+// R destructor (implemented with postorder traversal) 
+~r
+
+hashMap()
+
+T is a template class (load factor = 0.5, capacity = 4) 
+hashMap<T> hMap; 
+
+//Insert an object of template class T into hashTable
+hMap.insert(T) 
+
+//Get an object with string name
+hMap[std::string name] 
+
+//store elements in hMap into a sorted vector
+hMap.sortedList(vector&) 
+
+The red black tree was made using the algorithm from GeeksforGeeks.com 
