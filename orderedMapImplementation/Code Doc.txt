@@ -26,4 +26,4 @@ hMap[std::string name]
 //store elements in hMap into a sorted vector
 hMap.sortedList(vector&) 
 
-The red black tree was made using the algorithm from GeeksforGeeks.com 
+The red black tree was based onthe algorithm from GeeksforGeeks.com 
